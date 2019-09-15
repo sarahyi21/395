@@ -1,0 +1,323 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Database</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<style>
+		
+	  body {background-color: powderblue;}
+	  
+		html {
+		  font-family: sans-serif;
+		}
+		
+		table {
+		  border-collapse: collapse;
+		  border: 2px solid rgb(200,200,200);
+		  letter-spacing: 1px;
+		  font-size: 0.8rem;
+		}
+		
+		td, th {
+		  border: 1px solid rgb(190,190,190);
+		  padding: 10px 20px;
+		}
+		
+		th {
+		  background-color: rgb(235,235,235);
+		}
+		
+		td {
+		  text-align: center;
+		}
+		
+		tr:nth-child(even) td {
+		  background-color: rgb(250,250,250);
+		}
+		
+		tr:nth-child(odd) td {
+		  background-color: rgb(245,245,245);
+		}
+		
+		caption {
+		  padding: 10px;
+		}
+		
+		#table2 {
+		display: none;
+		}
+		
+
+	</style>
+	<h1>Welcome to the Facilities Database</h1>
+	
+	<button type="button" onclick="patients()">Access Patients Database</button> 
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+		
+		<input type="text" id="searchbar" name="searchbar" placeholder="Type to search">
+		<button type="button" onclick="search()">Search</button> 
+		
+	
+				<table id="table">
+				<CAPTION ALIGN="top">Type the name of the facility into the search bar to see the rooms the facility offers.</CAPTION>
+					<thead>
+				    	<tr>
+				        	<th>Name</th><th>Phone Number</th><th>Location</th><th>ID</th><th>Rooms Available</th>
+				        </tr>
+				    </thead>
+				    	<tbody>
+				        </tbody>
+				</table>
+				
+				<table id="table2" display="hide">
+				<CAPTION ALIGN="top">Here are the rooms available.</CAPTION>
+					<thead>
+				    	<tr>
+				        	<th>Fac ID</th><th>Room No</th><th>Amenities</th><th>Available</th>
+				        </tr>
+				    </thead>
+				    	<tbody>
+				        </tbody>
+				</table>
+				
+				<div id="reserveMessage">
+				<p id="p1">You have reserved: </p>
+				
+				</div>
+				<div id="cancelMessage">
+				<p id="p2">You have cancelled: </p>
+				
+				</div>
+
+				<div class="reserve-form">
+		    <form>
+				<div class="form-header">
+					<h2>Reserve</h2>
+					<p>Reserve a Room Here!</p>
+				</div>
+				
+				
+				<div class="form-group">
+					<label>Patient ID Number</label>
+		        	<input type="text" id="patid" class="form-control" name="patid" required="required">
+		        </div>
+				<div class="form-group">
+					<label>Patient First and Last Name</label>
+		        	<input type="text" id="patname" class="form-control" name="patname" required="required">
+		        </div>
+		        <div class="form-group">
+					<label>Describe Illness</label>
+		        	<input type="text" id="illness" class="form-control" name="illness" required="required">
+		        </div>
+		        <div class="form-group">
+					<label>Other Notes</label>
+		        	<input type="text" id="notes" class="form-control" name="notes" required="required">
+		        </div>
+		        
+		        
+		        <div class="form-group">
+					<label>Facility ID</label>
+		        	<input type="text" id="facid" class="form-control" name="facid" required="required">
+		        </div>
+				<div class="form-group">
+					<label>Room Number</label>
+		            <input type="text" id="roomno" class="form-control" name="roomno" required="required">
+		        </div>       
+				<div class="form-group">
+					<button type="button" onclick="reserve()" class="btn btn-primary btn-block btn-lg">Submit Reservation</button>
+				</div>	
+		    </form>
+		</div>
+
+		<div class="reserve-form">
+				<div class="form-header">
+					<h2>Cancel</h2>
+					<p>Cancel a Room Reservation Here!</p>
+				</div>
+		        <div class="form-group">
+					<label>Facility ID</label>
+		        	<input type="text" id="cancel_facid" class="form-control" name="cancel_facid" required="required">
+		        </div>
+				<div class="form-group">
+					<label>Room Number</label>
+		            <input type="text" id="cancel_roomno" class="form-control" name="cancel_roomno" required="required">
+		        </div>       
+				<div class="form-group">
+					<button type="button" onclick="cancel()" class="btn btn-primary btn-block btn-lg">Submit Cancellation</button>
+				</div>	
+		    </form>
+
+		</div>
+	<script>
+
+			$.ajax({	
+				type: 'GET',						
+				url: 'http://localhost/database',	
+			})
+			.done(function(data) {
+			console.log(JSON.stringify(data));		
+	
+			var tbody = $('#table tbody'),
+			    props = ["facility_name", "phone_number", "location", "facility_id", "rooms_available"];
+			$.each(data, function(i, data) {
+			  var tr = $('<tr>');
+			  $.each(props, function(i, prop) {
+			    $('<td>').html(data[prop]).appendTo(tr);  
+			  });
+			  tbody.append(tr);
+			});		
+
+			})
+			.fail(function(data) {
+	            alert("Failed to load data.");
+	        });
+
+	</script>
+	<script>
+	        
+		function patients() {
+		window.location.href="http://localhost/patients.html";
+		}
+		
+		function search() {
+
+		var x = document.getElementById("table2");
+		if (x.style.display === "hide") {
+ 	    x.style.display = "block";
+  		} else {
+ 	    x.style.display = "none";
+  		}
+  		
+		var obj = {}
+		obj.searchbar=document.getElementById('searchbar').value
+	
+		$.ajax({
+	            type: 'POST',
+	            url: 'http://localhost/search',
+	            data: JSON.stringify(obj),
+	            contentType: "application/json"
+	        })
+	        
+	        .done(function(data) {
+	        	console.log(JSON.stringify(data));    
+	        document.getElementById("table2").style.display="block";
+	        $("#table2 tbody tr").remove();
+			var tbody = $('#table2 tbody'),
+			    props = ["facility_id", "room_no", "amenities", "available"];
+			$.each(data, function(i, data) {
+			  var tr = $('<tr>');
+			  $.each(props, function(i, prop) {
+			    $('<td>').html(data[prop]).appendTo(tr);  
+			  });
+			  tbody.append(tr);	  	           
+	        });
+	        
+	        })
+	                
+	        .fail(function(data) {
+	            console.log(data);
+	        });        
+		}
+	     
+		
+		function reserve() {
+		var obj = {}
+		obj.facid = document.getElementById('facid').value
+		obj.roomno = document.getElementById('roomno').value
+		obj.patid = document.getElementById('patid').value
+		obj.patname = document.getElementById('patname').value
+		obj.illness = document.getElementById('illness').value
+		obj.notes = document.getElementById('notes').value
+
+		$.ajax({
+	            type: 'POST',
+	            url: 'http://localhost/reserve',
+	            data: JSON.stringify(obj),
+	            contentType: "application/json"
+	        })
+	        
+	        .done(function(data) {
+	       		alert("You have reserved a room!");
+	        	window.location.reload(true);
+	        	
+	        })
+	        
+	        .fail(function(data) {
+	            console.log(data);
+	            alert("ERROR: DID NOT RESERVE. Make sure to put in the correct information.");
+	        	window.location.reload(true);
+	        });   
+	        
+	        var info1 = document.getElementById('facid').value;
+	        var info2 = document.getElementById('roomno').value;	        
+	        
+	        var paragraph = document.createElement("p");
+	        var node = document.createTextNode("Room ");
+	        paragraph.appendChild(node);
+	        
+	        var node1 = document.createTextNode(info2);
+	        paragraph.appendChild(node1);
+	        
+	     	var node2 = document.createTextNode(" in Facility ");
+	        paragraph.appendChild(node2);
+	        
+	        var node3 = document.createTextNode(info1);
+	        paragraph.appendChild(node3);
+	        
+	        var element = document.getElementById("reserveMessage");
+	        element.appendChild(paragraph);     
+		}
+		
+		function cancel() {
+		var obj = {}
+		obj.facid =document.getElementById('cancel_facid').value
+		obj.roomno =document.getElementById('cancel_roomno').value
+
+		$.ajax({
+	            type: 'POST',
+	            url: 'http://localhost/cancel',
+	            data: JSON.stringify(obj),
+	            contentType: "application/json"
+	        })
+	        
+	        .done(function(data) {
+	        console.log(JSON.stringify(data));
+	        alert("Successful cancellation!");
+	        window.location.reload(true);
+	        
+	        })
+	        
+	        .fail(function(data) {
+	            console.log(data);
+	            alert("ERROR: did not cancel. Make sure to put in the correct information.");
+	      	    window.location.reload(true); 
+	        });   
+	        var info1 = document.getElementById('cancel_facid').value;
+	        var info2 = document.getElementById('cancel_roomno').value;	        
+	        
+	        var paragraph = document.createElement("p");
+	        var node = document.createTextNode("Room ");
+	        paragraph.appendChild(node);
+	        
+	        var node1 = document.createTextNode(info2);
+	        paragraph.appendChild(node1);
+	        
+	     	var node2 = document.createTextNode(" in Facility ");
+	        paragraph.appendChild(node2);
+	        
+	        var node3 = document.createTextNode(info1);
+	        paragraph.appendChild(node3);
+	        
+	        var element = document.getElementById("cancelMessage");
+	        element.appendChild(paragraph);     
+		}
+	</script>
+
+	
+</body>
+</html>
